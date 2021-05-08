@@ -41,3 +41,19 @@ func (u UseCase) GetRoomList(userID int64) ([]model.Room, error) {
 func multiply(x, y int64) int64 {
 	return x * y
 }
+
+func (u UseCase) CreateChat(roomID int64, userID int64, message string) (model.Chat, error) {
+
+	err := u.dbRoomRsc.CreateChat(roomID, userID, message)
+
+	if err != nil {
+		return model.Chat{}, err
+	}
+
+	return model.Chat{
+		RoomID:  roomID,
+		UserID:  userID,
+		Message: message,
+	}, nil
+
+}

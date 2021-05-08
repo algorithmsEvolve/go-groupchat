@@ -63,3 +63,8 @@ func (dbr *RedisResource) GetRoomByID(roomID int64) (model.Room, error) {
 func (dbr *RedisResource) GetRooms(userID int64) ([]model.Room, error) {
 	return dbr.next.GetRooms(userID)
 }
+
+func (dbr *RedisResource) CreateChat(roomID int64, userID int64, message string) error {
+	//no need redis for DML (insert)
+	return dbr.next.CreateChat(roomID, userID, message)
+}

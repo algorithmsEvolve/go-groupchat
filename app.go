@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	chat "github.com/algorithmsEvolve/go-groupchat/usecase/chat"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
@@ -24,6 +25,7 @@ import (
 var dbRoomResource groupchat.DBItf
 var userClient userAuth.ClientItf
 var groupChatUsecase groupchat2.UsecaseItf
+var chatUsecase chat.UsecaseItf
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
@@ -69,6 +71,8 @@ func main() {
 	r.GET("/groupchat", validateSession(getRoomList))
 	r.GET("/joined", validateSession(getJoinedRoom))
 	r.GET("/groupchat/:room_id", getGroupchat)
+	r.POST("/groupchat/:room_id/chat", validateSession(createChat))
+	r.GET("/groupchat/:room_id/chat", getChatList)
 	r.Run()
 }
 
@@ -136,7 +140,7 @@ func createRoom(c *gin.Context) {
 		catID = 0
 	}
 
-	//_, err = groupChatUsecase.CreateGroupchat(name, adminId, desc, catID)
+	_, err = groupChatUsecase.CreateGroupchat(name, adminId, desc, catID)
 	log.Println(name, desc, categoryId, adminId, catID)
 	err = nil
 	if err != nil {
@@ -220,6 +224,63 @@ func getRoomList(c *gin.Context) {
 	c.JSON(200, StandardAPIResponse{
 		Err:  "null",
 		Data: rooms,
+	})
+}
+
+func createChat(c *gin.Context) {
+	userID := c.GetInt64("uid")
+
+	roomIDStr := c.Param("room_id")
+
+	roomID, err := strconv.ParseInt(roomIDStr, 10, 64)
+
+	if userID < 1 {
+		c.JSON(400, StandardAPIResponse{
+			Err: "Unauthorized",
+		})
+		return
+	}
+
+	message := c.Request.FormValue("message")
+
+	_, err = groupChatUsecase.CreateChat(roomID, userID, message)
+
+	log.Println(roomID, userID, message)
+
+	err = nil
+
+	if err != nil {
+		c.JSON(400, StandardAPIResponse{
+			Err: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(201, StandardAPIResponse{
+		Err:     "null",
+		Message: "Success create new groupchat",
+	})
+}
+
+func getChatList(c *gin.Context) {
+	roomIDStr := c.Param("room_id")
+
+	roomID, err := strconv.ParseInt(roomIDStr, 10, 64)
+
+	chats, err := chatUsecase.GetChats(roomID)
+
+	log.Println("chats: ", chats)
+
+	if err != nil {
+		c.JSON(400, StandardAPIResponse{
+			Err: err.Error(),
+		})
+		return
+	}
+
+	c.JSON(200, StandardAPIResponse{
+		Err:  "null",
+		Data: chats,
 	})
 }
 

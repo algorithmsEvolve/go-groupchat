@@ -16,12 +16,7 @@ type DBResource struct {
 }
 
 type DBItf interface {
-	GetJoinedRoom(userID int64) ([]model.Room, error)
-	GetRoomByID(roomID int64) (model.Room, error)
-	GetRooms(userID int64) ([]model.Room, error)
-	CreateRoom(roomName string, adminID int64, description string, categoryID int64) error
-	AddRoomParticipant(roomID, userID int64) error
-	CreateChat(roomID int64, userID int64, message string) error
+	GetChats(roomID int64) ([]model.Chat, error)
 }
 
 func NewRedisResource(rdb *redis.Client, next DBItf) DBItf {

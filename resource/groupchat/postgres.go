@@ -179,3 +179,37 @@ func (dbr *DBResource) GetRooms(userID int64) ([]model.Room, error) {
 
 	return resultRooms, err
 }
+
+func (dbr *DBResource) CreateChat(roomID int64, userID int64, message string) error {
+	query := `
+		INSERT INTO
+			chat
+		(
+			room_id,
+			user_id,
+			message,
+			created_at
+		)
+		VALUES
+		(
+			$1,
+			$2,
+			$3,
+			$4
+		)
+	`
+
+	res, err := dbr.db.Exec(query, roomID, userID, message, time.Now())
+	if err != nil {
+		return err
+	}
+
+	log.Println("RES: ", res)
+
+	// lastInsertID, err1 := res.LastInsertId()
+
+	// log.Println("RES value:", lastInsertID, err1)
+	// //TO ASK: cant get last inserted ID so cant return last inserted room record
+
+	return nil
+}
